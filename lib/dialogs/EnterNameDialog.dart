@@ -16,10 +16,21 @@ class EnterNameDialog {
       builder: (BuildContext context) {
         return WillPopScope(
           onWillPop: () async => false,
-          child: EnterNameWidget(
-            this.settings,
-            onOk: () => Navigator.of(context).pop(true),
-            onCancel: () => Navigator.of(context).pop(false)
+          child: SingleChildScrollView(
+            child: EnterNameWidget(
+              this.settings.preferences.displayName,
+              this.settings.preferences.color,
+              onOk: (displayName, color) async {
+                
+                  this.settings.preferences.displayName = displayName;
+                  this.settings.preferences.color = color;
+                  
+                  await this.settings.saveSettings();
+
+                Navigator.of(context).pop(true);
+              },
+              onCancel: () => Navigator.of(context).pop(false)
+            )
           )
         );
       }

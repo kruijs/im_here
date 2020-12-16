@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:map_markers/map_markers.dart';
 
+import 'package:im_here/helpers/ColorExtensions.dart';
+import 'package:im_here/helpers/DurationExtensions.dart';
 
 import 'package:im_here/services/ServiceLocator.dart';
 import 'package:im_here/services/SettingsProvider.dart';
@@ -12,10 +14,6 @@ import 'package:im_here/services/hereiam/UserLocation.dart';
 import 'package:im_here/services/hereiam/HereIAmService.dart';
 
 import 'package:im_here/screens/SettingsScreen.dart';
-
-import 'package:im_here/helpers/ColorExtensions.dart';
-import 'package:im_here/helpers/DateTimeExtensions.dart';
-import 'package:im_here/helpers/DurationExtensions.dart';
 
 import 'package:im_here/dialogs/EnterNameDialog.dart';
 import 'package:im_here/dialogs/FindByNameDialog.dart';
@@ -33,10 +31,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   
-  final MapController controller = MapController();
+  final MapController mapController = MapController();
   final SettingsProvider settings;
 
   bool starting = true;
+  bool initializing = false;
+
   HereIAmService hereiam;
   List<Marker> markers = [];
 
@@ -46,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     this.hereiam.addListener(this.updateMap);
-    this.init();
+    this.startup();
   }
 
   @override
@@ -55,32 +55,47 @@ class _MainScreenState extends State<MainScreen> {
     this.hereiam.dispose();
     super.dispose();
   }
-
-  Future<void> init() async {
-    
-    print("MainScreen:init");
+  
+  Future<void> startup() async {
 
     setState(() {
       this.starting = true;
     });
 
-    var name = this.settings.preferences.displayName;
-    
-    if (name != null && name.isNotEmpty) {
-      await this.hereiam.initialize(name, this.settings.preferences.color);
-      
-      if (this.controller.ready) {
-        this.controller.move(this.hereiam.currentLocation, 15);
-      } else {
-        this.controller.onReady.then((value) {
-          this.controller.move(this.hereiam.currentLocation, 15);
-        });
-      }
-    }
+    await this.init();
 
     setState(() {
       this.starting = false;
     });
+  }
+
+  Future<void> init() async {
+    
+    print("MainScreen:init");
+
+    var name = this.settings.preferences.displayName;
+    
+    if (name != null && name.isNotEmpty) {
+
+      setState(() {
+        this.initializing = true;
+      });
+
+      await this.hereiam.initialize(name, this.settings.preferences.color);
+        
+      setState(() {
+        this.initializing = false;
+      });
+      
+      if (this.mapController.ready) {
+        this.mapController.move(this.hereiam.currentLocation, 15);
+      } else {
+        this.mapController.onReady.then(
+          (value) => this.mapController.move(this.hereiam.currentLocation, 15)
+        );
+      }
+
+    }
   }
 
   Future<void> updateMap() async {     
@@ -89,28 +104,43 @@ class _MainScreenState extends State<MainScreen> {
 
     setState(() { 
       this.markers = this.hereiam.locations
+        .where((entry) => entry != null && entry.user != null && entry.location != null)
         .map((entry) => this.getMarker(entry))
         .toList();
     }); 
   }
 
   Marker getMarker(UserLocation userlocation) {
-    
-    var age = userlocation.location.timestamp.parseIso6801String()
-              .difference(DateTime.now());
 
-    var isoffline = age > Duration(minutes: 10);
+    var ago = userlocation.location.age.getLabel();
 
     return Marker(
-      height: 100.0,
-      width: 120.0,
+      width: 500,
+      height: 140,
       point: userlocation.location.point,
       builder: (ctx) => BubbleMarker(
         widgetBuilder: (BuildContext context) 
-          => Icon(Icons.location_on, size: 35.0, color: userlocation.user.color.parseToColor().withAlpha(isoffline ? 100 : 255)),
-        bubbleColor: userlocation.user.color.parseToColor(),
+          => Icon(Icons.location_on, size: 40, color: userlocation.markerColor),
+        bubbleColor: userlocation.markerColor,
         bubbleContentWidgetBuilder: (BuildContext context) 
-          => Text('${userlocation.user.name} (${age.formatDuration()})')
+          => Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 1, style: BorderStyle.solid),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              color: Colors.white
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${userlocation.user.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                SizedBox(height: 5),
+                Text('$ago', style: TextStyle(fontSize: 15)),
+              ]
+            )
+          )
       ),
     );
   }
@@ -131,7 +161,10 @@ class _MainScreenState extends State<MainScreen> {
       actions: [
         Visibility(
           visible: this.hereiam.sendingfailed || this.hereiam.loadingfailed,
-          child: Icon(Icons.warning,),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+            child: Icon(Icons.cloud_off,),
+          )
         ),
         Visibility(
           visible: this.hereiam.isInitialized,
@@ -145,10 +178,20 @@ class _MainScreenState extends State<MainScreen> {
                   : Colors.white.withAlpha(128),
               ),
               onTap: this.hereiam.locations.length > 1 ? () async {
-                var location = await FindByNameDialog(this.context, this.hereiam.locations).show();              
-                if (location != null) {
-                   this.controller.move(location.location.point, 18);
-                }
+                await FindByNameDialog(this.context).show(
+                  markers: this.hereiam.locations,
+                  trackedMarkerKey: '',
+                  onSelectFind: (location) {           
+                    if (location != null) {
+                      this.mapController.move(location.location.point, 18);
+                    }
+                  },
+                  onSelectTrack: (location) {
+                    if (location != null) {
+                      this.mapController.move(location.location.point, 18);
+                    }
+                  }
+                );  
               } : null
             )
           ),
@@ -159,7 +202,7 @@ class _MainScreenState extends State<MainScreen> {
             padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: InkWell(
               child: Icon(Icons.center_focus_strong_outlined,),
-              onTap: () => this.controller.move(this.hereiam.currentLocation, 18)
+              onTap: () => this.mapController.move(this.hereiam.currentLocation, 18)
             )
           ),
         ),
@@ -170,8 +213,10 @@ class _MainScreenState extends State<MainScreen> {
             child: InkWell(
               child: Icon(Icons.settings,),
               onTap: () async {
-                await Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
-                await this.init();
+                var ok = await Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                if (ok == true) {
+                  await this.init();
+                }
               }
             ) 
           )
@@ -203,26 +248,36 @@ class _MainScreenState extends State<MainScreen> {
       : this.hereiam.isInitialized
         ? FlutterMap(
             options: MapOptions(
-              zoom: 13.0,
+              zoom: 13,
+              maxZoom: 18,
               plugins: [
-              ],
+              ]
             ),
             layers: [
               TileLayerOptions(
                 urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                subdomains: ['a', 'b', 'c']
+                subdomains: ['a', 'b', 'c'],
               ),
-              MarkerLayerOptions(markers: this.markers ?? []),
+              MarkerLayerOptions(
+                markers: this.markers ?? []
+              ),
             ],
-            mapController: this.controller,
-          )
-        : Container(
-          child: EnterNameWidget(
-            this.settings,
-            onOk: () async {
-              await this.init();
-            }
-          )
-        );
+            mapController: this.mapController,
+          ) 
+        : this.initializing == true
+          ? CircularProgressIndicator()
+          : Container(
+              height: 400,
+              child: EnterNameWidget(
+                this.settings.preferences.displayName,
+                this.settings.preferences.color,
+                onOk: (displayName, color) async {
+                  this.settings.preferences.displayName = displayName;
+                  this.settings.preferences.color = color;
+                  await this.settings.saveSettings();
+                  await this.init();
+                }
+              )
+            );
   }
 }

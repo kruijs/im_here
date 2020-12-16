@@ -19,7 +19,9 @@ class HereIAmService extends ChangeNotifier {
 
   final List<UserLocation> _locations = [];
 
-  Timer _timer;
+  Timer _timerSettings;
+  Timer _timerLocation;
+
   String _mac;
   String _name;
   String _color;
@@ -33,7 +35,8 @@ class HereIAmService extends ChangeNotifier {
 
   @override
   void dispose() {
-    this._timer.cancel();
+    this._timerSettings.cancel();
+    this._timerLocation.cancel();
     this._location.removeListener(this.sendCurrentLocation);
     super.dispose();
   }
@@ -42,9 +45,14 @@ class HereIAmService extends ChangeNotifier {
 
     print("HereIAmService:initialize");
 
-    if (this._timer != null) {
-      this._timer.cancel();
-      this._timer = null;
+    if (this._timerSettings != null) {
+      this._timerSettings.cancel();
+      this._timerSettings = null;
+    }
+    
+    if (this._timerLocation != null) {
+      this._timerLocation.cancel();
+      this._timerLocation = null;
     }
     
     this._name = name;
@@ -57,9 +65,13 @@ class HereIAmService extends ChangeNotifier {
     await this._location.getCurrentLocation();
     await this.sendCurrentLocation();
     
-    this._timer = Timer.periodic(
+    this._timerSettings = Timer.periodic(
+      Duration(seconds: 10), 
+      (t) async => await this.sendSettings());
+      
+    this._timerLocation = Timer.periodic(
       Duration(seconds: 3), 
-      (t) async => await this._updateLocations());
+      (t) async => await this.sendCurrentLocation());
   }
 
   bool get isInitialized {
@@ -92,12 +104,15 @@ class HereIAmService extends ChangeNotifier {
     }
 
     var location = LocationInfo(
-      DateTime.now().toIso8601String(),
-      this._location.current.longitude,
-      this._location.current.latitude);
+      timestamp: DateTime.now().toIso8601String().split('.').first,
+      long: this._location.current.longitude,
+      lat: this._location.current.latitude
+    );
    
     var data = location.toJson();
-    await this._post({ "location": data });
+
+    var locations = await this._post({ "location": data });
+    _setLocations(locations);
   }
   
   Future<void> sendSettings() async {
@@ -116,12 +131,11 @@ class HereIAmService extends ChangeNotifier {
     var data = user.toJson();
     await this._post({ "user": data });
   }
-
-  Future<void> _updateLocations() async {
+  
+  void _setLocations(List<UserLocation> locations) {
 
     var changed = false;
-    var locations = await this._getLocations();
-
+    
     for (var i = 0; i < locations.length; i++) {
       if (this._locations.length < i + 1) {
         changed = true;
@@ -155,7 +169,25 @@ class HereIAmService extends ChangeNotifier {
     {
       print("GET " + uri);
       Response<Map> response = await Dio().get(uri);
-      Map data = response.data;
+      
+      this._loadingfailed = false;
+      
+      return this. _getLocationsFromResponse(response);
+
+    } catch (ex) {
+
+      print(ex);
+      if (this._loadingfailed != true) {
+        this._loadingfailed = true;
+        this.notifyListeners();
+      }
+
+      return [];
+    }
+  }
+
+  List<UserLocation> _getLocationsFromResponse(Response<Map> response) {
+     Map data = response.data;
 
       var result = List<UserLocation>();
       if (data != null && data.entries != null) {
@@ -166,35 +198,22 @@ class HereIAmService extends ChangeNotifier {
               if (info != null
                 && info.location != null
                 && info.location.point != null) {
+                  info.key = entry.key;
                   result.add(info);
               }
-            });  
-
+            });
       }
 
-      this._loadingfailed = false;
-      
       return result;
-
-    } catch (ex) {
-      print(ex);
-      
-      if (this._loadingfailed != true) {
-        this._loadingfailed = true;
-        this.notifyListeners();
-      }
-
-      return null;
-    }
   }
 
-  Future<void> _post(Map data) async {
+  Future<List<UserLocation>> _post(Map data) async {
     var uri = '${this._serviceUri}/data/${this._mac}';
     
     try
     {
       print("POST " + uri);
-      await Dio().post(
+      Response<Map> response = await Dio().post(
         uri, 
         data: data, 
         options: Options(
@@ -204,13 +223,19 @@ class HereIAmService extends ChangeNotifier {
       );
 
       this._sendingfailed = false;
+
+      return this._getLocationsFromResponse(response);
       
     } catch (ex) {
+
       print(ex);
       if (this._sendingfailed != true) {
         this._sendingfailed = true;
         this.notifyListeners();
       }
+
     }
+
+    return [];
   }
 }

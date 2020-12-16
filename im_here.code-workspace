@@ -2,10 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"name": "im_here",
-			"path": "..\\im_here"
 		}
 	],
 	"settings": {}

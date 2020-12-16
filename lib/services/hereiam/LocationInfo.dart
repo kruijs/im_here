@@ -1,6 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:latlong/latlong.dart';
 
+import 'package:im_here/helpers/DateTimeExtensions.dart';
+
 part 'LocationInfo.g.dart';
 
 /// !Start the watcher by running flutter pub run build_runner watch in the project root.
@@ -20,7 +22,14 @@ class LocationInfo {
       : null;
   }
 
-  LocationInfo(this.timestamp, this.long, this.lat);
+  LocationInfo({ this.timestamp, this.long, this.lat });
+
+  Duration get age {
+    
+    return timestamp != null 
+      ? DateTime.now().difference(this.timestamp.parseIso6801String())
+      : null;
+  }
 
   bool equals(LocationInfo other) {
     return this.timestamp == other.timestamp

@@ -295,7 +295,7 @@ packages:
       name: get_it
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.0.1"
+    version: "5.0.3"
   get_mac:
     dependency: "direct main"
     description:

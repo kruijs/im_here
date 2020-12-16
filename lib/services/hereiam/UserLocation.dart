@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'package:im_here/services/hereiam/UserInfo.dart';
 import 'package:im_here/services/hereiam/LocationInfo.dart';
+
+import 'package:im_here/helpers/ColorExtensions.dart';
 
 part 'UserLocation.g.dart';
 
@@ -11,14 +14,26 @@ part 'UserLocation.g.dart';
 @JsonSerializable()
 class UserLocation {
 
-  UserInfo user;
-  LocationInfo location;
+  String key;
+  UserInfo user = UserInfo();
+  LocationInfo location = LocationInfo();
 
-  UserLocation({ this.user, this.location });
+  UserLocation();
+
+  Color get markerColor {
+
+    var age = this.location.age;
+
+    var isoffline = age == null || age > Duration(minutes: 10);
+
+    return this.user != null
+      ? this.user.color.parseToColor().withAlpha(isoffline ? 100 : 255)
+      : null;
+  }
 
   bool equals(UserLocation other) {
-    return this.user.equals(other.user)
-        && this.location.equals(other.location);
+    return this.user != null && this.user.equals(other.user)
+        && this.location != null && this.location.equals(other.location);
   }
 
   factory UserLocation.fromJson(Map<String, dynamic> json) => _$UserLocationFromJson(json);

@@ -8,9 +8,9 @@ part of 'LocationInfo.dart';
 
 LocationInfo _$LocationInfoFromJson(Map<String, dynamic> json) {
   return LocationInfo(
-    json['timestamp'] as String,
-    (json['long'] as num)?.toDouble(),
-    (json['lat'] as num)?.toDouble(),
+    timestamp: json['timestamp'] as String,
+    long: (json['long'] as num)?.toDouble(),
+    lat: (json['lat'] as num)?.toDouble(),
   );
 }
 

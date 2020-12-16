@@ -14,7 +14,7 @@ extension StringToColorExtensions on String {
 
     }
     
-    return fallback;
+    return fallback ?? Colors.transparent;
   }
 
 }

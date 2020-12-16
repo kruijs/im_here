@@ -27,7 +27,7 @@ extension StringToDateTimeExtensions on String {
   DateTime parseIso6801String() {
     return this != null
       ? DateTime.parse(this)
-      : null;
+      : DateTime.now();
   }
 
 }

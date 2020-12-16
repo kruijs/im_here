@@ -15,7 +15,7 @@ class SecureStorageUserSettingsProvider extends SettingsProvider {
   Future<void> loadSettings() async {
 
     print("getSettings");
-    var settings = new Settings();
+    var settings = new Settings();  
     
     var string = await secureStorage.read(key: _key);
     if (string != null && string.isNotEmpty) {

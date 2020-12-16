@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:im_here/dialogs/ColorPickerDialog.dart';
 
@@ -32,67 +33,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {   
+    var width = MediaQuery.of(context).size.width;
+    var padding = (width - 300) / 2;
     return Scaffold(
       appBar: AppBar(
         title: Text("Einstellungen"),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(40),
+        padding: EdgeInsets.fromLTRB(padding, 40, padding, 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+
           children: [
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 200,
-                  alignment: Alignment.topCenter,
-                  child: TextFormField(
-                    minLines: 1,
-                    maxLines: 1,
-                    controller: this.displayName,
-                    keyboardType: TextInputType.text,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: 'Dein Name',
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    width: 200, 
-                    alignment: Alignment.topCenter,
-                    child: MaterialButton(
-                      onPressed: () async {
-                        var color = await ColorPickerDialog(context, this.color.text.parseToColor()).show();
-                        setState(() {
-                          this.color.text = color.toHexString();
-                        });
-                      },
-                      color: this.color.text.parseToColor(),
-                      textColor: Colors.white,
-                      padding: EdgeInsets.all(16),
-                      shape: CircleBorder(),
-                    ),
-                  )
-                )
-              ]
-            ),
-
-            SizedBox(height: 20),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: this.displayName,
+                    keyboardType: TextInputType.text,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      hintText: 'Gib hier deinen Namen ein',
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 80, 
+                  alignment: Alignment.centerRight,
+                  child: MaterialButton(
+                    onPressed: () async {
+                      var color = await ColorPickerDialog(context, this.color.text.parseToColor()).show();
+                      setState(() {
+                        this.color.text = color.toHexString();
+                      });
+                    },
+                    color: this.color.text.parseToColor(),
+                    textColor: Colors.white,
+                    padding: EdgeInsets.all(16),
+                    shape: CircleBorder(),
+                  ),
+                )
+              ]
+            ),
+
+            SizedBox(height: 40),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: this.updateInterval,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      labelText: "Aktualisierungsintervall (in Sekunden)"
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [ 
+                      FilteringTextInputFormatter.digitsOnly
+                    ],
+                  ),
+                ),
+              ]
+            ),
+
+            SizedBox(height: 40),
+ 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
                 OutlineButton(
-                  child: Text("Speichern"),
+                  child: Text("Speichern", ),
                   onPressed: () async {
 
                     this.settings.preferences.displayName = this.displayName.text;
