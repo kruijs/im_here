@@ -81,7 +81,10 @@ class _MainScreenState extends State<MainScreen> {
         this.initializing = true;
       });
 
-      await this.hereiam.initialize(name, this.settings.preferences.color);
+      await this.hereiam.initialize(
+        name, 
+        this.settings.preferences.color ?? '',
+        this.settings.preferences.updateIntervalSeconds ?? 10);
         
       setState(() {
         this.initializing = false;
@@ -213,8 +216,7 @@ class _MainScreenState extends State<MainScreen> {
             child: InkWell(
               child: Icon(Icons.settings,),
               onTap: () async {
-                var ok = await Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
-                if (ok == true) {
+                if (await Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))) {
                   await this.init();
                 }
               }
@@ -236,15 +238,7 @@ class _MainScreenState extends State<MainScreen> {
   
   Widget buildBody(BuildContext context) {
     return this.starting == true 
-      ? Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Center(child: CircularProgressIndicator()),
-          Center(child: SizedBox(height: 20)),
-          Center(child: Text("Lade..."))
-        ]
-      )
+      ? busyIndicator("Lade...")
       : this.hereiam.isInitialized
         ? FlutterMap(
             options: MapOptions(
@@ -265,7 +259,7 @@ class _MainScreenState extends State<MainScreen> {
             mapController: this.mapController,
           ) 
         : this.initializing == true
-          ? CircularProgressIndicator()
+          ? busyIndicator("Lade...")
           : Container(
               height: 400,
               child: EnterNameWidget(
@@ -279,5 +273,17 @@ class _MainScreenState extends State<MainScreen> {
                 }
               )
             );
+  }
+
+  Widget busyIndicator(String text) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Center(child: CircularProgressIndicator()),
+        Center(child: SizedBox(height: 20)),
+        Center(child: Text(text))
+      ]
+    );
   }
 }

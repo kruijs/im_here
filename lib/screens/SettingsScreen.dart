@@ -126,11 +126,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Navigator.pop(context, true);
                   
                   }
-                ),
-                SizedBox(width: 10,),
-                OutlineButton(
-                  child: Text("Abbrechen"),
-                  onPressed: () => Navigator.pop(context, false)
                 )
               ],
             )

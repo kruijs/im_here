@@ -41,7 +41,7 @@ class HereIAmService extends ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> initialize(String name, String color) async {
+  Future<void> initialize(String name, String color, int sendLocationInterval) async {
 
     print("HereIAmService:initialize");
 
@@ -66,11 +66,11 @@ class HereIAmService extends ChangeNotifier {
     await this.sendCurrentLocation();
     
     this._timerSettings = Timer.periodic(
-      Duration(seconds: 10), 
+      Duration(seconds: sendLocationInterval * 2), 
       (t) async => await this.sendSettings());
       
     this._timerLocation = Timer.periodic(
-      Duration(seconds: 3), 
+      Duration(seconds: sendLocationInterval), 
       (t) async => await this.sendCurrentLocation());
   }
 
