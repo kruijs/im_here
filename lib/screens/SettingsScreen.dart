@@ -54,7 +54,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
-                  child: TextFormField(
+                  child: TextField(
+                    autofocus: true,
                     controller: this.displayName,
                     keyboardType: TextInputType.text,
                     textAlign: TextAlign.center,

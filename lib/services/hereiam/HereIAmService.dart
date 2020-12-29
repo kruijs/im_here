@@ -96,12 +96,12 @@ class HereIAmService extends ChangeNotifier {
 
   Future<void> sendCurrentLocation() async {
 
-    print("HereIAmService:sendCurrentLocation");
-
     if (!this.isInitialized
       || this._location.current == null) {
       return;
     }
+
+    print("HereIAmService:sendCurrentLocation");
 
     var location = LocationInfo(
       timestamp: DateTime.now().toIso8601String().split('.').first,

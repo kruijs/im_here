@@ -58,6 +58,7 @@ class _EnterNameWidgetState extends State<EnterNameWidget> {
                       borderRadius: BorderRadius.all(Radius.circular(5)),
                     ),
                     child: TextField(
+                      autofocus: true,
                       maxLines: 1,
                       expands: false,
                       controller: this.displayName,
