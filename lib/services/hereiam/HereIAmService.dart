@@ -2,41 +2,42 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:im_here/services/hereiam/UserInfo.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart';
 
-import 'package:im_here/services/device/MacProvider.dart';
-import 'package:im_here/services/device/DeviceLocationProvider.dart';
+import 'package:im_here/services/hereiam/UserInfo.dart';
+
+import 'package:im_here/services/device/DeviceUidProvider.dart';
+import 'package:im_here/services/LocationProvider.dart';
 
 import 'package:im_here/services/hereiam/LocationInfo.dart';
 import 'package:im_here/services/hereiam/UserLocation.dart';
 
 class HereIAmService extends ChangeNotifier {
 
-  final MacProvider _macProvider;
+  final DeviceUidProvider _deviceUidProvider;
   final String _serviceUri;
-  final DeviceLocationProvider _location;
+  final LocationProvider _location;
 
   final List<UserLocation> _locations = [];
 
-  Timer _timerSettings;
-  Timer _timerLocation;
+  Timer? _timerSettings;
+  Timer? _timerLocation;
 
-  String _mac;
-  String _name;
-  String _color;
+  String? _mac;
+  String? _name;
+  String? _color;
 
-  bool _sendingfailed;
-  bool _loadingfailed;
+  bool _sendingfailed = false;
+  bool _loadingfailed = false;
 
-  HereIAmService(this._serviceUri, this._location, this._macProvider) {
+  HereIAmService(this._serviceUri, this._location, this._deviceUidProvider) {
     this._location.addListener(this.sendCurrentLocation);
   }
 
   @override
   void dispose() {
-    this._timerSettings.cancel();
-    this._timerLocation.cancel();
+    this._timerSettings?.cancel();
+    this._timerLocation?.cancel();
     this._location.removeListener(this.sendCurrentLocation);
     super.dispose();
   }
@@ -46,19 +47,19 @@ class HereIAmService extends ChangeNotifier {
     print("HereIAmService:initialize");
 
     if (this._timerSettings != null) {
-      this._timerSettings.cancel();
+      this._timerSettings?.cancel();
       this._timerSettings = null;
     }
     
     if (this._timerLocation != null) {
-      this._timerLocation.cancel();
+      this._timerLocation?.cancel();
       this._timerLocation = null;
     }
     
     this._name = name;
     this._color = color;
 
-    this._mac = await this._macProvider.getMac();
+    this._mac = await this._deviceUidProvider.getDeviceUid();
     
     await this.sendSettings();
     
@@ -86,7 +87,7 @@ class HereIAmService extends ChangeNotifier {
     return this._loadingfailed == true;
   }
 
-  LatLng get currentLocation {
+  LatLng? get currentLocation {
     return this._location.current;
   }
 
@@ -105,8 +106,8 @@ class HereIAmService extends ChangeNotifier {
 
     var location = LocationInfo(
       timestamp: DateTime.now().toIso8601String().split('.').first,
-      long: this._location.current.longitude,
-      lat: this._location.current.latitude
+      long: this._location.current?.longitude,
+      lat: this._location.current?.latitude
     );
    
     var data = location.toJson();
@@ -158,7 +159,7 @@ class HereIAmService extends ChangeNotifier {
     }
 
   }
-
+/*
   Future<List<UserLocation>> _getLocations() async {
   
     print("HereIAmService:getLocations");
@@ -172,7 +173,7 @@ class HereIAmService extends ChangeNotifier {
       
       this._loadingfailed = false;
       
-      return this. _getLocationsFromResponse(response);
+      return this._getLocationsFromResponse(response);
 
     } catch (ex) {
 
@@ -185,19 +186,17 @@ class HereIAmService extends ChangeNotifier {
       return [];
     }
   }
-
+*/
   List<UserLocation> _getLocationsFromResponse(Response<Map> response) {
-     Map data = response.data;
+     var data = response.data;
 
-      var result = List<UserLocation>();
-      if (data != null && data.entries != null) {
+      List<UserLocation>  result = [];
+      if (data != null) {
 
         data.entries
             .forEach((entry) {
               var info = UserLocation.fromJson(entry.value);
-              if (info != null
-                && info.location != null
-                && info.location.point != null) {
+              if (info.location?.point != null) {
                   info.key = entry.key;
                   result.add(info);
               }
@@ -218,7 +217,7 @@ class HereIAmService extends ChangeNotifier {
         data: data, 
         options: Options(
           followRedirects: false,
-          validateStatus: (status) { return status < 500; }
+          validateStatus: (status) { return (status ?? 200) < 500; }
         )
       );
 

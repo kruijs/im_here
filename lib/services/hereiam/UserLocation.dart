@@ -14,26 +14,29 @@ part 'UserLocation.g.dart';
 @JsonSerializable()
 class UserLocation {
 
-  String key;
-  UserInfo user = UserInfo();
-  LocationInfo location = LocationInfo();
+  String? key;
+  UserInfo? user;
+  LocationInfo? location;
 
-  UserLocation();
+  UserLocation()
+    : this.key = '';
 
-  Color get markerColor {
+  UserLocation.fromKey(this.key);
 
-    var age = this.location.age;
+  Color? get markerColor {
+
+    var age = this.location?.age;
 
     var isoffline = age == null || age > Duration(minutes: 10);
 
     return this.user != null
-      ? this.user.color.parseToColor().withAlpha(isoffline ? 100 : 255)
+      ? this.user?.color.parseToColor().withAlpha(isoffline ? 100 : 255)
       : null;
   }
 
-  bool equals(UserLocation other) {
-    return this.user != null && this.user.equals(other.user)
-        && this.location != null && this.location.equals(other.location);
+  bool equals(UserLocation? other) {
+    return this.user != null && this.user!.equals(other?.user)
+        && this.location != null && this.location!.equals(other?.location);
   }
 
   factory UserLocation.fromJson(Map<String, dynamic> json) => _$UserLocationFromJson(json);

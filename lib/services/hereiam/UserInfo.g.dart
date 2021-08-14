@@ -8,8 +8,8 @@ part of 'UserInfo.dart';
 
 UserInfo _$UserInfoFromJson(Map<String, dynamic> json) {
   return UserInfo(
-    name: json['name'] as String,
-    color: json['color'] as String,
+    name: json['name'] as String?,
+    color: json['color'] as String?,
   );
 }
 

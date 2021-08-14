@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-extension StringToColorExtensions on String {
+extension StringToColorExtensions on String? {
 
-  Color parseToColor({ Color fallback }) {
+  Color parseToColor({ Color? fallback }) {
     
     try {
-      if (this != null && this.isNotEmpty) {
-        return HexColor(this);
+      if (this != null && this!.isNotEmpty) {
+        return HexColor(this!);
       }
     }
     catch (ex) {
@@ -20,15 +20,14 @@ extension StringToColorExtensions on String {
 }
 
 
-extension ColorToStringExtensions on Color {
+extension ColorToStringExtensions on Color? {
 
-  String toHexString() {
-    
+  String? toHexString() {
+
     try {
-      return '#${this.value.toRadixString(16)}';
+      return this == null ? null : '#${this?.value.toRadixString(16)}';
     }
     catch (ex) {
-
     }
     
     return null;

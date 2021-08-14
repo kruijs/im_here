@@ -8,7 +8,7 @@ part of 'UserLocation.dart';
 
 UserLocation _$UserLocationFromJson(Map<String, dynamic> json) {
   return UserLocation()
-    ..key = json['key'] as String
+    ..key = json['key'] as String?
     ..user = json['user'] == null
         ? null
         : UserInfo.fromJson(json['user'] as Map<String, dynamic>)

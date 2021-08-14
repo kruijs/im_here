@@ -14,8 +14,8 @@ abstract class SettingsProvider {
     ));
   }
 
-  Future<void> setSettings(Settings settings) async {
-    this.preferences = settings.preferences;
+  Future<void> setSettings(Settings? settings) async {
+    this.preferences = settings?.preferences ?? new Preferences();
   }
 
 }

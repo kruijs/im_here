@@ -10,9 +10,9 @@ part 'Settings.g.dart';
 @JsonSerializable(explicitToJson: true)
 class Settings {
 
-  Preferences preferences = new Preferences();
+  Preferences? preferences;
 
-  Settings({this.preferences});
+  Settings({ this.preferences });
 
   factory Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);
   Map<String, dynamic> toJson() => _$SettingsToJson(this);

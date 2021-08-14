@@ -9,7 +9,7 @@ class FindByNameDialog {
   
   FindByNameDialog(this.context);
   
-  Future<UserLocation> show({ List<UserLocation> markers, String trackedMarkerKey, Function(UserLocation) onSelectFind, Function(UserLocation) onSelectTrack }) async {
+  Future<UserLocation?> show({ required List<UserLocation> markers, required String trackedMarkerKey, required Function(UserLocation?) onSelectFind, required Function(UserLocation?) onSelectTrack }) async {
     return await showDialog<UserLocation>(
       context: context,
       builder: (BuildContext context) {

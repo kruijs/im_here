@@ -23,14 +23,13 @@ class SecureStorageUserSettingsProvider extends SettingsProvider {
       settings = Settings.fromJson(map);
     }
 
-    settings.preferences = settings.preferences ?? new Preferences();
-    this.preferences = settings.preferences;
+    this.preferences = settings.preferences ?? new Preferences();
 
     super.loadSettings();
   }
   
   @override
-  Future<void> setSettings(Settings settings) async {
+  Future<void> setSettings(Settings? settings) async {
     
     print("setSettings");
 

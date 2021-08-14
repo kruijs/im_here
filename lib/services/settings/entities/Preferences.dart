@@ -8,11 +8,11 @@ part 'Preferences.g.dart';
 @JsonSerializable()
 class Preferences {
 
-  String displayName;
-  String color;
-  int updateIntervalSeconds;
+  String? displayName;
+  String? color;
+  int? updateIntervalSeconds;
 
-  Preferences();
+  Preferences({ this.displayName, this.color, this.updateIntervalSeconds });
 
   factory Preferences.fromJson(Map<String, dynamic> json) => _$PreferencesFromJson(json);
   Map<String, dynamic> toJson() => _$PreferencesToJson(this);

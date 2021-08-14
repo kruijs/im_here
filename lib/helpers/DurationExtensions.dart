@@ -1,12 +1,12 @@
-extension DurationExtensions on Duration {
+extension DurationExtensions on Duration? {
 
-  String formatDuration() {
+  String? formatDuration() {
     return this != null 
       ? this.toString().split('.').first.padLeft(8, "0")
-      : '';
+      : null;
   }
 
-  String getLabel() {
+  String? getLabel() {
     
     var age = this ?? Duration(days: 1);    
 

@@ -24,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController color = TextEditingController();
 
   _SettingsScreenState(this.settings) {
-    this.displayName.text = this.settings.preferences.displayName;
+    this.displayName.text = this.settings.preferences.displayName ?? '';
     this.color.text = this.settings.preferences.color ?? '#RR000';
     this.updateInterval.text = this.settings.preferences.updateIntervalSeconds != null
       ? this.settings.preferences.updateIntervalSeconds.toString()
@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: () async {
                       var color = await ColorPickerDialog(context, this.color.text.parseToColor()).show();
                       setState(() {
-                        this.color.text = color.toHexString();
+                        this.color.text = color.toHexString() ?? '';
                       });
                     },
                     color: this.color.text.parseToColor(),

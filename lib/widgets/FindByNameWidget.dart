@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import 'package:im_here/helpers/DurationExtensions.dart';
 import 'package:im_here/services/hereiam/UserLocation.dart';
 
 class FindByNameWidget extends StatelessWidget {
-  final Function onCancel;
-  final Function(UserLocation) onSelectFind;
+  final void Function()? onCancel;
+  final void Function(UserLocation?)? onSelectFind;
   final List<UserLocation> markers;
-  final Function(UserLocation) onSelectTrack;
+  final void Function(UserLocation?)? onSelectTrack;
   final String trackedMarkerKey;
 
   FindByNameWidget(this.markers, this.trackedMarkerKey,
@@ -44,7 +45,7 @@ class FindByNameWidget extends StatelessWidget {
                               InkWell(
                                 child: Icon(Icons.location_on,
                                     size: 40, color: e.markerColor),
-                                onTap: () => this.onSelectFind(e),
+                                onTap: this.onSelectFind == null ? null : () => this.onSelectFind!(e),
                               ),
                               SizedBox(
                                 width: 5,
@@ -59,22 +60,20 @@ class FindByNameWidget extends StatelessWidget {
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               height: 2.1)),
-                                      onTap: () => this.onSelectFind(e),
+                                      onTap: this.onSelectFind == null ? null : () => this.onSelectFind!(e),
                                     ),
-                                    Text(e.location.age.getLabel(),
+                                    Text(e.location?.age.getLabel() ?? '',
                                         style:
                                             TextStyle(height: 1, fontSize: 10)),
                                   ]),
                               Container(
                                 width: 30,
-                                child: RadioListTile(
-                                  value: e.key,
+                                child: RadioListTile<String>(
+                                  value: e.key ?? '',
                                   groupValue: this.trackedMarkerKey,
                                   selected: e.key == this.trackedMarkerKey,
-                                  onChanged: (key) => this.onSelectTrack(
-                                      markers.firstWhere(
-                                          (element) => element.key == key,
-                                          orElse: () => null)),
+                                  onChanged: this.onSelectTrack == null ? null 
+                                    : (key) => this.onSelectTrack!(markers.firstWhereOrNull((element) => element.key == key))
                                 ),
                               ),
                               SizedBox(

@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'package:im_here/helpers/DateTimeExtensions.dart';
 
@@ -11,30 +11,30 @@ part 'LocationInfo.g.dart';
 @JsonSerializable()
 class LocationInfo {
 
-  double long;
-  double lat;
+  double? long;
+  double? lat;
 
-  String timestamp;
+  String? timestamp;
 
-  LatLng get point  {
+  LatLng? get point  {
     return this.lat != null && this.long != null 
-      ? LatLng(this.lat, this.long) 
+      ? LatLng(this.lat ?? 0, this.long ?? 0) 
       : null;
   }
 
   LocationInfo({ this.timestamp, this.long, this.lat });
 
-  Duration get age {
+  Duration? get age {
     
-    return timestamp != null 
-      ? DateTime.now().difference(this.timestamp.parseIso6801String())
+    return this.timestamp != null 
+      ? DateTime.now().difference(this.timestamp!.parseIso6801String())
       : null;
   }
 
-  bool equals(LocationInfo other) {
-    return this.timestamp == other.timestamp
-        && this.long == other.long  
-        && this.lat == other.lat;
+  bool equals(LocationInfo? other) {
+    return this.timestamp == other?.timestamp
+        && this.long == other?.long  
+        && this.lat == other?.lat;
   }
 
   factory LocationInfo.fromJson(Map<String, dynamic> json) => _$LocationInfoFromJson(json);

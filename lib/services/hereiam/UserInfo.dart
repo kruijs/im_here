@@ -8,14 +8,14 @@ part 'UserInfo.g.dart';
 @JsonSerializable()
 class UserInfo {
 
-  String name;
-  String color;
+  String? name;
+  String? color;
 
   UserInfo({ this.name, this.color });
 
-  bool equals(UserInfo other) {
-    return this.name == other.name
-        && this.color == other.color;
+  bool equals(UserInfo? other) {
+    return this.name == other?.name
+        && this.color == other?.color;
   }
 
   factory UserInfo.fromJson(Map<String, dynamic> json) => _$UserInfoFromJson(json);

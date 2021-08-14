@@ -8,7 +8,7 @@ class ColorPickerDialog {
   
   ColorPickerDialog(this.context, this.color);
   
-  Future<Color> show() async {
+  Future<Color?> show() async {
     return await showDialog<Color>(
       context: context,
       builder: (BuildContext context) {

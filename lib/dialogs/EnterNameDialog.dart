@@ -10,7 +10,7 @@ class EnterNameDialog {
   
   EnterNameDialog(this.context, this.settings);
   
-  Future<bool> show() async {
+  Future<bool?> show() async {
     return await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

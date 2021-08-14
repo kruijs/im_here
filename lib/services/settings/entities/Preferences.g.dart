@@ -7,10 +7,11 @@ part of 'Preferences.dart';
 // **************************************************************************
 
 Preferences _$PreferencesFromJson(Map<String, dynamic> json) {
-  return Preferences()
-    ..displayName = json['displayName'] as String
-    ..color = json['color'] as String
-    ..updateIntervalSeconds = json['updateIntervalSeconds'] as int;
+  return Preferences(
+    displayName: json['displayName'] as String?,
+    color: json['color'] as String?,
+    updateIntervalSeconds: json['updateIntervalSeconds'] as int?,
+  );
 }
 
 Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>

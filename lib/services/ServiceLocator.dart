@@ -4,7 +4,7 @@ import 'package:im_here/services/LocationProvider.dart';
 import 'package:im_here/services/SettingsProvider.dart';
 
 import 'package:im_here/services/device/DeviceLocationProvider.dart';
-import 'package:im_here/services/device/MacProvider.dart';
+import 'package:im_here/services/device/DeviceUidProvider.dart';
 import 'package:im_here/services/hereiam/HereIAmService.dart';
 
 import 'package:im_here/services/settings/SecureStorageUserSettingsProvider.dart';
@@ -17,9 +17,9 @@ GetIt bootstrap() {
 
   getIt.registerSingleton<LocationProvider>(DeviceLocationProvider());
   getIt.registerSingleton<SettingsProvider>(SecureStorageUserSettingsProvider()); 
-  getIt.registerSingleton<MacProvider>(MacProvider()); 
+  getIt.registerSingleton<DeviceUidProvider>(DeviceUidProvider()); 
 
-  getIt.registerSingleton<HereIAmService>(HereIAmService(serviceUri, getIt<LocationProvider>(), getIt<MacProvider>()));
+  getIt.registerSingleton<HereIAmService>(HereIAmService(serviceUri, getIt<LocationProvider>(), getIt<DeviceUidProvider>()));
   
   return getIt; 
 }

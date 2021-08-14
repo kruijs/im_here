@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:map_markers/map_markers.dart';
+
+import 'package:latlong2/latlong.dart';
 
 import 'package:im_here/helpers/ColorExtensions.dart';
 import 'package:im_here/helpers/DurationExtensions.dart';
@@ -90,14 +91,9 @@ class _MainScreenState extends State<MainScreen> {
         this.initializing = false;
       });
       
-      if (this.mapController.ready) {
-        this.mapController.move(this.hereiam.currentLocation, 15);
-      } else {
-        this.mapController.onReady.then(
-          (value) => this.mapController.move(this.hereiam.currentLocation, 15)
-        );
-      }
-
+      this.mapController.onReady.then(
+        (value) => this.mapController.move(this.hereiam.currentLocation ?? LatLng(0, 0), 15)
+      );
     }
   }
 
@@ -107,7 +103,7 @@ class _MainScreenState extends State<MainScreen> {
 
     setState(() { 
       this.markers = this.hereiam.locations
-        .where((entry) => entry != null && entry.user != null && entry.location != null)
+        .where((entry) => entry.user != null && entry.location != null)
         .map((entry) => this.getMarker(entry))
         .toList();
     }); 
@@ -115,35 +111,29 @@ class _MainScreenState extends State<MainScreen> {
 
   Marker getMarker(UserLocation userlocation) {
 
-    var ago = userlocation.location.age.getLabel();
+    var ago = userlocation.location?.age.getLabel();
 
     return Marker(
       width: 500,
       height: 140,
-      point: userlocation.location.point,
-      builder: (ctx) => BubbleMarker(
-        widgetBuilder: (BuildContext context) 
-          => Icon(Icons.location_on, size: 40, color: userlocation.markerColor),
-        bubbleColor: userlocation.markerColor,
-        bubbleContentWidgetBuilder: (BuildContext context) 
-          => Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 1, style: BorderStyle.solid),
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-              color: Colors.white
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('${userlocation.user.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                SizedBox(height: 5),
-                Text('$ago', style: TextStyle(fontSize: 15)),
-              ]
-            )
-          )
+      point: userlocation.location?.point ?? LatLng(0, 0),
+      builder: (ctx) => Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 1, style: BorderStyle.solid),
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+          color: Colors.white
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${userlocation.user?.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            SizedBox(height: 5),
+            Text('$ago', style: TextStyle(fontSize: 15)),
+          ]
+        )
       ),
     );
   }
@@ -152,13 +142,12 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {    
     return Scaffold(
       appBar: this.starting || !this.hereiam.isInitialized 
-        ? null 
-        : this.buildAppBar(context),
+        ? null : this.buildAppBar(context),
       body: this.buildBody(context)
     );
   }
 
-  Widget buildAppBar(BuildContext context) {
+  PreferredSizeWidget? buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: this.settings.preferences.color.parseToColor(fallback: Colors.red),
       actions: [
@@ -186,12 +175,12 @@ class _MainScreenState extends State<MainScreen> {
                   trackedMarkerKey: '',
                   onSelectFind: (location) {           
                     if (location != null) {
-                      this.mapController.move(location.location.point, 18);
+                      this.mapController.move(location.location?.point ?? LatLng(0, 0), 18);
                     }
                   },
                   onSelectTrack: (location) {
                     if (location != null) {
-                      this.mapController.move(location.location.point, 18);
+                      this.mapController.move(location.location?.point?? LatLng(0, 0), 18);
                     }
                   }
                 );  
@@ -205,7 +194,7 @@ class _MainScreenState extends State<MainScreen> {
             padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: InkWell(
               child: Icon(Icons.center_focus_strong_outlined,),
-              onTap: () => this.mapController.move(this.hereiam.currentLocation, 18)
+              onTap: () => this.mapController.move(this.hereiam.currentLocation ?? LatLng(0, 0), 18)
             )
           ),
         ),
@@ -230,7 +219,7 @@ class _MainScreenState extends State<MainScreen> {
           await this.init();
         },
         child: this.settings.preferences.displayName != null
-          ? Text(this.settings.preferences.displayName)
+          ? Text(this.settings.preferences.displayName ?? '')
           : Container(),
       )
     );
@@ -253,7 +242,7 @@ class _MainScreenState extends State<MainScreen> {
                 subdomains: ['a', 'b', 'c'],
               ),
               MarkerLayerOptions(
-                markers: this.markers ?? []
+                markers: this.markers
               ),
             ],
             mapController: this.mapController,

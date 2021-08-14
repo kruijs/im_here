@@ -6,11 +6,11 @@ import 'package:im_here/helpers/ColorExtensions.dart';
 
 class EnterNameWidget extends StatefulWidget {
 
-  final String displayName;
-  final String color;
+  final String? displayName;
+  final String? color;
 
-  final Function(String,String) onOk;
-  final Function onCancel;
+  final void Function(String,String)? onOk;
+  final void Function()? onCancel;
   
   EnterNameWidget(this.displayName, this.color, { this.onOk, this.onCancel });
 
@@ -24,12 +24,12 @@ class _EnterNameWidgetState extends State<EnterNameWidget> {
   final TextEditingController displayName = TextEditingController();
   final TextEditingController color = TextEditingController();
 
-  final Function(String,String) onOk;
-  final Function onCancel;
+  final void Function(String,String)? onOk;
+  final void Function()? onCancel;
 
-  _EnterNameWidgetState(String displayName, String color, this.onOk, this.onCancel) {
-    this.displayName.text = displayName;
-    this.color.text = color;
+  _EnterNameWidgetState(String? displayName, String? color, this.onOk, this.onCancel) {
+    this.displayName.text = displayName ?? '';
+    this.color.text = color ?? '';
   }
 
   @override
@@ -78,7 +78,7 @@ class _EnterNameWidgetState extends State<EnterNameWidget> {
                     onPressed: () async {
                       var color = await ColorPickerDialog(context, this.color.text.parseToColor()).show();
                       setState(() {
-                        this.color.text = color.toHexString();
+                        this.color.text = color.toHexString() ?? '';
                       });
                     },
                     color: this.color.text.parseToColor(),
@@ -102,12 +102,12 @@ class _EnterNameWidgetState extends State<EnterNameWidget> {
         ),
         FlatButton(
           child: Text('OK'),
-          onPressed: () async { 
+          onPressed: this.widget.onOk == null ? null : () async { 
     
-            if (this.displayName.text != null
-             && this.displayName.text.isNotEmpty) {
+            if (this.displayName.text.isNotEmpty
+             && this.widget.onOk != null) {
               
-              this.widget.onOk(
+              this.widget.onOk!(
                 this.displayName.text,
                 this.color.text
               );
